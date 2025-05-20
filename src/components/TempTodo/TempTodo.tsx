@@ -11,7 +11,7 @@ interface Props {
     value?: HTMLInputElement['value'],
   ) => void;
   editingTodoId: number | undefined;
-  setEditingTodoId: (value: number) => void;
+  setEditingTodoId: (value: number | undefined) => void;
 }
 
 export const TempTodo = ({

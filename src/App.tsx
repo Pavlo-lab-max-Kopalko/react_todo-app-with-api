@@ -11,7 +11,7 @@ import { Footer } from './components/Footer';
 
 export const App: React.FC = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [errorMessage, setErrorMessage] = useState<ErrorMessage>(
+  const [rrorMessage, setErrorMessage] = useState<ErrorMessage>(
     ErrorMessage.DEFAULT,
   );
   const [count, setCount] = useState<number>(0);
@@ -59,13 +59,9 @@ export const App: React.FC = () => {
       const backStatus = seekTodo?.completed;
       const changArg = { completed: !backStatus };
 
-      console.log(backStatus);
-
       patchTodos(todoId, changArg)
         .then(response => {
           const mappedTodos: Todo[] = todos.map(todo => {
-            console.log(response);
-
             if (todo.id === todoId) {
               return response as Todo;
             }
@@ -83,31 +79,9 @@ export const App: React.FC = () => {
     if (change === 'title') {
       const changArg = { title: value };
 
-      // if (changArg.title === '') {
-      //   deleteTodos(todoId)
-      //     .then(() => {
-      //       inputRef.current?.focus();
-      //       const exsistedTodos = todos.filter(todo => todo.id !== todoId);
-
-      //       setTodos(exsistedTodos);
-      //     })
-      //     .catch(() => {
-      //       setErrorMessage(ErrorMessage.DELETE);
-
-      //       setTimeout(() => {
-      //         setErrorMessage(ErrorMessage.DEFAULT);
-      //       }, 3000);
-      //     })
-      //     .finally(() =>
-      //       setDeletedTodoId(prevIds => prevIds.filter(id => id !== todoId)),
-      //     );
-      // }
-
       patchTodos(todoId, changArg)
         .then(response => {
           const mappedTodos: Todo[] = todos.map(todo => {
-            console.log(response);
-
             if (todo.id === todoId) {
               return response as Todo;
             }
@@ -119,6 +93,10 @@ export const App: React.FC = () => {
         })
         .catch(() => {
           setErrorMessage(ErrorMessage.UPDATE);
+
+          setTimeout(() => {
+            setErrorMessage(ErrorMessage.DEFAULT);
+          }, 3000);
         });
     }
   };
@@ -186,7 +164,7 @@ export const App: React.FC = () => {
         data-cy="ErrorNotification"
         className={cn(
           'notification is-danger is-light has-text-weight-normal',
-          { hidden: !errorMessage },
+          { hidden: !rrorMessage },
         )}
       >
         <button
@@ -196,7 +174,7 @@ export const App: React.FC = () => {
           onClick={onHandler}
         />
         {/* show only one message at a time */}
-        {errorMessage}
+        {rrorMessage}
       </div>
     </div>
   );

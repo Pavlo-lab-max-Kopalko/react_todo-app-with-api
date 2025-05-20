@@ -22,7 +22,7 @@ interface Props {
   deletedTodoId: number[];
   setDeletedTodoId: React.Dispatch<React.SetStateAction<number[]>>;
   editingTodoId: number | undefined;
-  setEditingTodoId: (value: number) => void;
+  setEditingTodoId: (value: number | undefined) => void;
 }
 
 export const TodoList = ({
@@ -92,6 +92,7 @@ export const TodoList = ({
           onInputChange={onInputChange}
           onDelete={onDelete}
           deletedTodoId={deletedTodoId}
+          setDeletedTodoId={setDeletedTodoId}
           editingTodoId={editingTodoId}
           setEditingTodoId={setEditingTodoId}
           inputRef={inputRef}

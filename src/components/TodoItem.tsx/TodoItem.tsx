@@ -2,8 +2,7 @@
 import { useState } from 'react';
 import { Todo } from '../../types/Todo';
 import cn from 'classnames';
-import { deleteTodos } from '../../api/todos';
-import { event } from 'cypress/types/jquery';
+// import { deleteTodos } from '../../api/todos';
 
 interface Props {
   todo: Todo;
@@ -14,8 +13,9 @@ interface Props {
   ) => void;
   onDelete: (todoId: number) => void;
   deletedTodoId: number[];
+  setDeletedTodoId: React.Dispatch<React.SetStateAction<number[]>>;
   editingTodoId: number | undefined;
-  setEditingTodoId: (value: number) => void;
+  setEditingTodoId: (value: number | undefined) => void;
   inputRef: React.MutableRefObject<HTMLInputElement | null>;
 }
 
@@ -24,6 +24,7 @@ export const TodoItem = ({
   onInputChange,
   onDelete,
   deletedTodoId,
+  setDeletedTodoId,
   editingTodoId,
   setEditingTodoId,
   inputRef,
@@ -54,6 +55,7 @@ export const TodoItem = ({
     }
 
     e.preventDefault();
+    setEditingTodoId(undefined);
   };
 
   return (
@@ -68,7 +70,10 @@ export const TodoItem = ({
           type="checkbox"
           className="todo__status"
           checked={todo.completed}
-          onChange={() => onInputChange(todo.id, 'status')}
+          onChange={() => {
+            setDeletedTodoId(prevIds => [...prevIds, todo.id]);
+            onInputChange(todo.id, 'status');
+          }}
         />
       </label>
 
@@ -81,7 +86,12 @@ export const TodoItem = ({
           {todo.title}
         </span>
       ) : (
-        <form>
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            setEditingTodoId(undefined);
+          }}
+        >
           <input
             data-cy="TodoTitleField"
             type="text"
