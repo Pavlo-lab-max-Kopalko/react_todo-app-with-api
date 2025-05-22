@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Todo } from '../../types/Todo';
 import cn from 'classnames';
 // import { deleteTodos } from '../../api/todos';
@@ -16,7 +16,7 @@ interface Props {
   setDeletedTodoId: React.Dispatch<React.SetStateAction<number[]>>;
   editingTodoId: number | undefined;
   setEditingTodoId: (value: number | undefined) => void;
-  inputRef: React.MutableRefObject<HTMLInputElement | null>;
+  // inputRef: React.MutableRefObject<HTMLInputElement | null>;
 }
 
 export const TodoItem = ({
@@ -27,9 +27,15 @@ export const TodoItem = ({
   setDeletedTodoId,
   editingTodoId,
   setEditingTodoId,
-  inputRef,
 }: Props) => {
   const [titleTodo, setTitleTodo] = useState<string>(todo.title);
+  const [renderButton, setRenderButton] = useState<boolean>(true);
+  const startTitleRef = useRef<string>('');
+
+  console.log(titleTodo);
+  console.log(startTitleRef.current);
+  console.log(todo.title);
+
   const handleBlur = (
     value: HTMLInputElement['value'],
     e: React.FocusEvent<HTMLInputElement, Element>,
@@ -39,12 +45,10 @@ export const TodoItem = ({
       //   .then(() => {
       //     inputRef.current?.focus();
       //     const exsistedTodos = todos.filter(todo => todo.id !== todoId);
-
       //     setTodos(exsistedTodos);
       //   })
       //   .catch(() => {
       //     setErrorMessage(ErrorMessage.DELETE);
-
       //     setTimeout(() => {
       //       setErrorMessage(ErrorMessage.DEFAULT);
       //     }, 3000);
@@ -56,6 +60,14 @@ export const TodoItem = ({
 
     e.preventDefault();
     setEditingTodoId(undefined);
+  };
+
+  const handleKeyUp = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') {
+      setEditingTodoId(undefined);
+      setTitleTodo(startTitleRef.current);
+      startTitleRef.current = '';
+    }
   };
 
   return (
@@ -81,7 +93,11 @@ export const TodoItem = ({
         <span
           data-cy="TodoTitle"
           className="todo__title"
-          onDoubleClick={() => setEditingTodoId(todo.id)}
+          onDoubleClick={() => {
+            setEditingTodoId(todo.id);
+            setRenderButton(false);
+            startTitleRef.current = todo.title;
+          }}
         >
           {todo.title}
         </span>
@@ -90,6 +106,7 @@ export const TodoItem = ({
           onSubmit={e => {
             e.preventDefault();
             setEditingTodoId(undefined);
+            setRenderButton(true);
           }}
         >
           <input
@@ -98,23 +115,30 @@ export const TodoItem = ({
             className="todo__title-field"
             placeholder="Empty todo will be deleted"
             value={titleTodo}
+            autoFocus={true}
             onChange={e => {
               onInputChange(todo.id, 'title', e.target.value);
               setTitleTodo(e.target.value);
             }}
-            onBlur={e => handleBlur(e.target.value, e)}
+            onKeyUp={handleKeyUp}
+            onBlur={e => {
+              handleBlur(e.target.value, e);
+              setRenderButton(true);
+            }}
           />
         </form>
       )}
 
-      <button
-        type="button"
-        className="todo__remove"
-        data-cy="TodoDelete"
-        onClick={() => onDelete(todo.id)}
-      >
-        ×
-      </button>
+      {renderButton && (
+        <button
+          type="button"
+          className="todo__remove"
+          data-cy="TodoDelete"
+          onClick={() => onDelete(todo.id)}
+        >
+          ×
+        </button>
+      )}
 
       <div
         data-cy="TodoLoader"

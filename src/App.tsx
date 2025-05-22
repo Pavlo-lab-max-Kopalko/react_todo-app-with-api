@@ -73,7 +73,10 @@ export const App: React.FC = () => {
         })
         .catch(() => {
           setErrorMessage(ErrorMessage.UPDATE);
-        });
+        })
+        .finally(() =>
+          setDeletedTodoId(prevIds => prevIds.filter(id => id !== todoId)),
+        );
     }
 
     if (change === 'title') {

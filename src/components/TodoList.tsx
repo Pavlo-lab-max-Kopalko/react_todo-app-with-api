@@ -95,7 +95,6 @@ export const TodoList = ({
           setDeletedTodoId={setDeletedTodoId}
           editingTodoId={editingTodoId}
           setEditingTodoId={setEditingTodoId}
-          inputRef={inputRef}
         />
       ))}
 
