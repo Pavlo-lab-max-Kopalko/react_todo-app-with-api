@@ -59,6 +59,8 @@ export const TodoItem = ({
     }
 
     e.preventDefault();
+    onInputChange(todo.id, 'title', titleTodo.trim());
+    startTitleRef.current = '';
     setEditingTodoId(undefined);
   };
 
@@ -99,14 +101,21 @@ export const TodoItem = ({
             startTitleRef.current = todo.title;
           }}
         >
-          {todo.title}
+          {titleTodo}
         </span>
       ) : (
         <form
           onSubmit={e => {
+            // setDeletedTodoId(prevIds => [...prevIds, todo.id]);
             e.preventDefault();
-            setEditingTodoId(undefined);
             setRenderButton(true);
+            setTitleTodo(prevTitle => prevTitle.trim());
+
+            if (startTitleRef.current === titleTodo.trim()) {
+              onInputChange(todo.id, 'title', 'no changes');
+            } else {
+              onInputChange(todo.id, 'title', titleTodo.trim());
+            }
           }}
         >
           <input
@@ -117,7 +126,6 @@ export const TodoItem = ({
             value={titleTodo}
             autoFocus={true}
             onChange={e => {
-              onInputChange(todo.id, 'title', e.target.value);
               setTitleTodo(e.target.value);
             }}
             onKeyUp={handleKeyUp}

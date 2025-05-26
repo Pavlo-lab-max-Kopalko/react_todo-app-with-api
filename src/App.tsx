@@ -82,6 +82,41 @@ export const App: React.FC = () => {
     if (change === 'title') {
       const changArg = { title: value };
 
+      if (changArg.title === 'no changes') {
+        console.log('no changes');
+
+        setEditingTodoId(undefined);
+
+        return;
+      }
+
+      console.log(value);
+      setDeletedTodoId(prevIds => [...prevIds, todoId]);
+
+      if (changArg.title === '') {
+        deleteTodos(todoId)
+          .then(() => {
+            inputRef.current?.focus();
+            const exsistedTodos = todos.filter(todo => todo.id !== todoId);
+
+            setTodos(exsistedTodos);
+          })
+          .catch(() => {
+            setErrorMessage(ErrorMessage.DELETE);
+            setTimeout(() => {
+              setErrorMessage(ErrorMessage.DEFAULT);
+            }, 3000);
+          })
+          .finally(() =>
+            setDeletedTodoId(prevIds => prevIds.filter(id => id !== todoId)),
+          );
+
+        return;
+      }
+
+      console.log(deletedTodoId);
+      console.log(todoId);
+
       patchTodos(todoId, changArg)
         .then(response => {
           const mappedTodos: Todo[] = todos.map(todo => {
@@ -93,6 +128,7 @@ export const App: React.FC = () => {
           });
 
           setTodos(mappedTodos);
+          setEditingTodoId(undefined);
         })
         .catch(() => {
           setErrorMessage(ErrorMessage.UPDATE);
@@ -100,11 +136,66 @@ export const App: React.FC = () => {
           setTimeout(() => {
             setErrorMessage(ErrorMessage.DEFAULT);
           }, 3000);
+        })
+        .finally(() => {
+          setDeletedTodoId(prevIds => prevIds.filter(item => item !== todoId));
         });
     }
   };
 
   console.log(todos);
+
+  const toggleHandler = () => {
+    const notCompletedTodos = todos.filter(todo => !todo.completed);
+
+    Promise.allSettled(
+      notCompletedTodos.map(todo => onInputChange(todo.id, 'status')),
+    ).then(results => {
+      const successfullyChangeIds: number[] = [];
+      const failedToChange = [];
+
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          successfullyChangeIds.push(notCompletedTodos[index].id);
+          console.log(
+            `Статус завдання з ID ${notCompletedTodos[index].id} виправлено успішно.`,
+          );
+        } else {
+          failedToChange.push({
+            id: notCompletedTodos[index].id,
+            error: result.reason,
+          });
+          setErrorMessage(ErrorMessage.UPDATE);
+          console.error(
+            `Помилка виправлення завдання з ID ${notCompletedTodos[index].id}:`,
+            result.reason,
+          );
+        }
+
+        const changedIdsSet = new Set<number>(successfullyChangeIds);
+
+        const updatedTodos = todos.map(todo => {
+          // Якщо ID тудушки є в Set успішно змінених ID
+          if (changedIdsSet.has(todo.id)) {
+            // Повертаємо новий об'єкт тудушки з інвертованим статусом
+            return {
+              ...todo, // Копіюємо всі інші властивості
+              completed: !todo.completed, // Інвертуємо статус
+            };
+          }
+          // Якщо ID тудушки не було змінено, повертаємо її як є
+
+          return todo;
+        });
+
+        setTodos(updatedTodos);
+
+        return results;
+      });
+
+      console.log(results);
+    });
+  };
 
   return (
     <div className="todoapp">
@@ -113,11 +204,14 @@ export const App: React.FC = () => {
       <div className="todoapp__content">
         <header className="todoapp__header">
           {/* this button should have `active` class only if all todos are completed */}
-          <button
-            type="button"
-            className="todoapp__toggle-all active"
-            data-cy="ToggleAllButton"
-          />
+          {todos.length !== 0 && (
+            <button
+              type="button"
+              className="todoapp__toggle-all active"
+              data-cy="ToggleAllButton"
+              onClick={() => toggleHandler()}
+            />
+          )}
 
           {/* Add a todo on form submit */}
           <FormAddTodo
