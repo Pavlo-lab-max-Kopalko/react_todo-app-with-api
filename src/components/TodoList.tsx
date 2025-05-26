@@ -14,7 +14,7 @@ interface Props {
   onInputChange: (
     todoId: number,
     change: string,
-    value?: HTMLInputElement['value']
+    value?: HTMLInputElement['value'],
   ) => void;
   tempTodo: Todo | null;
   setErrorMessage: (value: ErrorMessage) => void;
@@ -37,7 +37,7 @@ export const TodoList = ({
   deletedTodoId,
   setDeletedTodoId,
   editingTodoId,
-  setEditingTodoId
+  setEditingTodoId,
 }: Props) => {
   useEffect(() => {
     const incompleteCount = todos.filter(todo => !todo.completed).length;
@@ -61,8 +61,6 @@ export const TodoList = ({
     setDeletedTodoId(prevIds => [...prevIds, todoId]);
 
     const removeTodo = deleteTodos(todoId);
-
-    console.log(removeTodo);
 
     removeTodo
       .then(() => {

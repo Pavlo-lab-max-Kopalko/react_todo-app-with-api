@@ -52,8 +52,6 @@ export const FormAddTodo = ({
 
     addTodo
       .then(response => {
-        console.log(response);
-
         setTodos(prevTodos => [...prevTodos, response]);
         setTodoText('');
       })

@@ -32,10 +32,6 @@ export const TodoItem = ({
   const [renderButton, setRenderButton] = useState<boolean>(true);
   const startTitleRef = useRef<string>('');
 
-  console.log(titleTodo);
-  console.log(startTitleRef.current);
-  console.log(todo.title);
-
   const handleBlur = (
     value: HTMLInputElement['value'],
     e: React.FocusEvent<HTMLInputElement, Element>,

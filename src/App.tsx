@@ -22,6 +22,22 @@ export const App: React.FC = () => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [deletedTodoId, setDeletedTodoId] = useState<number[]>([]);
   const [editingTodoId, setEditingTodoId] = useState<number | undefined>();
+  const [activeToggleButton, setActiveToggleButton] = useState<boolean>(false);
+  let quan = 0;
+
+  useEffect(() => {
+    for (let i = 0; i < todos.length; i++) {
+      if (todos[i].completed) {
+        quan++;
+      }
+    }
+
+    if (quan === todos.length) {
+      setActiveToggleButton(true);
+    } else {
+      setActiveToggleButton(false);
+    }
+  }, [quan, setActiveToggleButton, todos]);
 
   useEffect(() => {
     getTodos()
@@ -83,14 +99,11 @@ export const App: React.FC = () => {
       const changArg = { title: value };
 
       if (changArg.title === 'no changes') {
-        console.log('no changes');
-
         setEditingTodoId(undefined);
 
         return;
       }
 
-      console.log(value);
       setDeletedTodoId(prevIds => [...prevIds, todoId]);
 
       if (changArg.title === '') {
@@ -113,9 +126,6 @@ export const App: React.FC = () => {
 
         return;
       }
-
-      console.log(deletedTodoId);
-      console.log(todoId);
 
       patchTodos(todoId, changArg)
         .then(response => {
@@ -143,58 +153,40 @@ export const App: React.FC = () => {
     }
   };
 
-  console.log(todos);
-
   const toggleHandler = () => {
     const notCompletedTodos = todos.filter(todo => !todo.completed);
+    const allCompleted = todos.every(todo => todo.completed);
+    const todosToUpdate = allCompleted ? todos : notCompletedTodos;
 
     Promise.allSettled(
-      notCompletedTodos.map(todo => onInputChange(todo.id, 'status')),
-    ).then(results => {
-      const successfullyChangeIds: number[] = [];
-      const failedToChange = [];
-
-      results.forEach((result, index) => {
-        if (result.status === 'fulfilled') {
-          successfullyChangeIds.push(notCompletedTodos[index].id);
-          console.log(
-            `Статус завдання з ID ${notCompletedTodos[index].id} виправлено успішно.`,
-          );
-        } else {
-          failedToChange.push({
-            id: notCompletedTodos[index].id,
-            error: result.reason,
-          });
-          setErrorMessage(ErrorMessage.UPDATE);
-          console.error(
-            `Помилка виправлення завдання з ID ${notCompletedTodos[index].id}:`,
-            result.reason,
-          );
-        }
-
-        const changedIdsSet = new Set<number>(successfullyChangeIds);
-
+      todosToUpdate.map(todo =>
+        patchTodos(todo.id, { completed: !todo.completed }),
+      ),
+    )
+      .then(results => {
         const updatedTodos = todos.map(todo => {
-          // Якщо ID тудушки є в Set успішно змінених ID
-          if (changedIdsSet.has(todo.id)) {
-            // Повертаємо новий об'єкт тудушки з інвертованим статусом
+          const result =
+            results[todosToUpdate.findIndex(t => t.id === todo.id)];
+
+          if (!todo.completed) {
+            setActiveToggleButton(false);
+          }
+
+          if (result?.status === 'fulfilled') {
             return {
-              ...todo, // Копіюємо всі інші властивості
-              completed: !todo.completed, // Інвертуємо статус
+              ...todo,
+              completed: !todo.completed,
             };
           }
-          // Якщо ID тудушки не було змінено, повертаємо її як є
 
           return todo;
         });
 
         setTodos(updatedTodos);
-
-        return results;
+      })
+      .catch(() => {
+        setErrorMessage(ErrorMessage.UPDATE);
       });
-
-      console.log(results);
-    });
   };
 
   return (
@@ -207,7 +199,9 @@ export const App: React.FC = () => {
           {todos.length !== 0 && (
             <button
               type="button"
-              className="todoapp__toggle-all active"
+              className={cn('todoapp__toggle-all', {
+                active: activeToggleButton,
+              })}
               data-cy="ToggleAllButton"
               onClick={() => toggleHandler()}
             />
