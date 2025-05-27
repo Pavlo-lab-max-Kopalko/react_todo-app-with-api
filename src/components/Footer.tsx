@@ -12,6 +12,7 @@ interface Props {
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
   inputRef: React.MutableRefObject<HTMLInputElement | null>;
   setErrorMessage: (value: ErrorMessage) => void;
+  setDeletedTodoId: React.Dispatch<React.SetStateAction<number[]>>;
 }
 
 export const Footer = ({
@@ -22,14 +23,20 @@ export const Footer = ({
   setTodos,
   inputRef,
   setErrorMessage,
+  setDeletedTodoId,
 }: Props) => {
   const onClear = () => {
     const completedTodos = todos.filter(todo => todo.completed);
+    const idsTodosCompleted: number[] = completedTodos.map(todo => todo.id);
+
+    setDeletedTodoId(prevIds => [...prevIds, ...idsTodosCompleted]);
 
     Promise.allSettled(completedTodos.map(todo => deleteTodos(todo.id)))
       .then(results => {
         const successfullyDeletedIds: number[] = [];
         const failedToDelete = [];
+
+        console.log(results);
 
         results.forEach((result, index) => {
           if (result.status === 'fulfilled') {
@@ -60,6 +67,9 @@ export const Footer = ({
       })
       .finally(() => {
         inputRef.current?.focus();
+        setDeletedTodoId(prev =>
+          prev.filter(id => !idsTodosCompleted.includes(id)),
+        );
       });
   };
 

@@ -157,8 +157,9 @@ export const App: React.FC = () => {
     const notCompletedTodos = todos.filter(todo => !todo.completed);
     const allCompleted = todos.every(todo => todo.completed);
     const todosToUpdate = allCompleted ? todos : notCompletedTodos;
-    const toggleTodosIds: number[] = [];
+    const toggleTodosIds: number[] = todosToUpdate.map(todo => todo.id);
 
+    setDeletedTodoId(prev => [...prev, ...toggleTodosIds]);
     Promise.allSettled(
       todosToUpdate.map(todo =>
         patchTodos(todo.id, { completed: !todo.completed }),
@@ -166,19 +167,10 @@ export const App: React.FC = () => {
     )
       .then(results => {
         const updatedTodos = todos.map(todo => {
-          const result =
-            results[todosToUpdate.findIndex(t => t.id === todo.id)];
-
-          if (!todo.completed) {
-            setActiveToggleButton(false);
-          }
+          const index = todosToUpdate.findIndex(t => t.id === todo.id);
+          const result = results[index];
 
           if (result?.status === 'fulfilled') {
-            setDeletedTodoId(prevIds => [...prevIds, todo.id]);
-            console.log(deletedTodoId);
-
-            toggleTodosIds.push(todo.id);
-
             return {
               ...todo,
               completed: !todo.completed,
@@ -188,31 +180,17 @@ export const App: React.FC = () => {
           return todo;
         });
 
-        console.log(deletedTodoId);
-        console.log(toggleTodosIds);
-
         setTodos(updatedTodos);
       })
       .catch(() => {
         setErrorMessage(ErrorMessage.UPDATE);
       })
       .finally(() => {
-        // toggleTodosIds.forEach(id => {
-        //   if (deletedTodoId.includes(id)) {
-        //     setDeletedTodoId(prevIds => prevIds.filter(num => num !== id));
-        //   }
-        // });
-
-        // toggleTodosIds.length = 0;
-        // console.log(toggleTodosIds);
+        setDeletedTodoId(prev =>
+          prev.filter(id => !toggleTodosIds.includes(id)),
+        );
       });
-
-    // setDeletedTodoId(toggleTodosIds);
-
-    console.log(deletedTodoId);
   };
-
-  console.log(deletedTodoId);
 
   return (
     <div className="todoapp">
@@ -270,6 +248,7 @@ export const App: React.FC = () => {
             setTodos={setTodos}
             inputRef={inputRef}
             setErrorMessage={setErrorMessage}
+            setDeletedTodoId={setDeletedTodoId}
           />
         )}
       </div>

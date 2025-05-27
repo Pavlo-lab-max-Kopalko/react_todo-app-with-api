@@ -19,7 +19,7 @@ export const patchTodos = (
   id: number,
   data: Partial<Pick<Todo, 'title' | 'completed'>>,
 ) => {
-  return client.patch(`/todos/${id}`, data);
+  return client.patch<Todo>(`/todos/${id}`, data);
 };
 
 // Add more methods here

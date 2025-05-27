@@ -32,28 +32,7 @@ export const TodoItem = ({
   const [renderButton, setRenderButton] = useState<boolean>(true);
   const startTitleRef = useRef<string>('');
 
-  const handleBlur = (
-    value: HTMLInputElement['value'],
-    e: React.FocusEvent<HTMLInputElement, Element>,
-  ) => {
-    if (value === '') {
-      // deleteTodos(todo.id)
-      //   .then(() => {
-      //     inputRef.current?.focus();
-      //     const exsistedTodos = todos.filter(todo => todo.id !== todoId);
-      //     setTodos(exsistedTodos);
-      //   })
-      //   .catch(() => {
-      //     setErrorMessage(ErrorMessage.DELETE);
-      //     setTimeout(() => {
-      //       setErrorMessage(ErrorMessage.DEFAULT);
-      //     }, 3000);
-      //   })
-      //   .finally(() =>
-      //     setDeletedTodoId(prevIds => prevIds.filter(id => id !== todoId)),
-      //   );
-    }
-
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement, Element>) => {
     e.preventDefault();
     onInputChange(todo.id, 'title', titleTodo.trim());
     startTitleRef.current = '';
@@ -70,7 +49,6 @@ export const TodoItem = ({
 
   return (
     <div
-      key={todo.id}
       data-cy="Todo"
       className={cn('todo item-enter-done', { completed: todo.completed })}
     >
@@ -126,7 +104,7 @@ export const TodoItem = ({
             }}
             onKeyUp={handleKeyUp}
             onBlur={e => {
-              handleBlur(e.target.value, e);
+              handleBlur(e);
               setRenderButton(true);
             }}
           />
