@@ -157,6 +157,7 @@ export const App: React.FC = () => {
     const notCompletedTodos = todos.filter(todo => !todo.completed);
     const allCompleted = todos.every(todo => todo.completed);
     const todosToUpdate = allCompleted ? todos : notCompletedTodos;
+    const toggleTodosIds: number[] = [];
 
     Promise.allSettled(
       todosToUpdate.map(todo =>
@@ -173,6 +174,11 @@ export const App: React.FC = () => {
           }
 
           if (result?.status === 'fulfilled') {
+            setDeletedTodoId(prevIds => [...prevIds, todo.id]);
+            console.log(deletedTodoId);
+
+            toggleTodosIds.push(todo.id);
+
             return {
               ...todo,
               completed: !todo.completed,
@@ -182,12 +188,31 @@ export const App: React.FC = () => {
           return todo;
         });
 
+        console.log(deletedTodoId);
+        console.log(toggleTodosIds);
+
         setTodos(updatedTodos);
       })
       .catch(() => {
         setErrorMessage(ErrorMessage.UPDATE);
+      })
+      .finally(() => {
+        // toggleTodosIds.forEach(id => {
+        //   if (deletedTodoId.includes(id)) {
+        //     setDeletedTodoId(prevIds => prevIds.filter(num => num !== id));
+        //   }
+        // });
+
+        // toggleTodosIds.length = 0;
+        // console.log(toggleTodosIds);
       });
+
+    // setDeletedTodoId(toggleTodosIds);
+
+    console.log(deletedTodoId);
   };
+
+  console.log(deletedTodoId);
 
   return (
     <div className="todoapp">

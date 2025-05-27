@@ -1132,7 +1132,7 @@ describe('', () => {
   });
 
   describe('Toggle All Button', () => {
-    describe.only('if there are no todos', () => {
+    describe('if there are no todos', () => {
       it('should not be visible while loading todos', () => {
         page.mockLoad({ body: [] }).as('loadRequest');
 
